@@ -1,11 +1,5 @@
 package metro;
 
-/**
- * MetroEdge
- * 
- * Represents a directional track connection between two consecutive stations
- * on a specific metro line, along with the estimated travel time in minutes.
- */
 public class MetroEdge {
     private final String source;
     private final String destination;

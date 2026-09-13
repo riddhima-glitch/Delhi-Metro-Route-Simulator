@@ -9,15 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * MetroDataLoader
- * 
- * Responsible for loading metro stations, lines, and connection timings from
- * an external CSV file into the MetroGraph.
- */
 public class MetroDataLoader {
 
-    // Helper record to temporarily hold CSV row data during sequential parsing
     private static class CsvRow {
         String lineName;
         String stationName;
@@ -32,13 +25,6 @@ public class MetroDataLoader {
         }
     }
 
-    /**
-     * Loads the metro network graph from the specified CSV file path.
-     * 
-     * @param filePath Path to the CSV file
-     * @return MetroGraph containing all parsed lines, stations, and edges
-     * @throws IOException If file is missing or cannot be read
-     */
     public static MetroGraph loadMetroData(String filePath) throws IOException {
         File file = new File(filePath);
         if (!file.exists()) {
@@ -56,12 +42,10 @@ public class MetroDataLoader {
                 lineNumber++;
                 String trimmed = line.trim();
 
-                // Skip blank lines or comments
                 if (trimmed.isEmpty() || trimmed.startsWith("#")) {
                     continue;
                 }
 
-                // Skip header line
                 if (lineNumber == 1 && trimmed.toLowerCase().startsWith("line_name")) {
                     continue;
                 }
@@ -99,12 +83,11 @@ public class MetroDataLoader {
             throw new IOException("No valid metro data found in file: " + filePath);
         }
 
-        // Process each line's sequential stations to create ordered lines and bidirectional graph edges
+        // Build lines and bidirectional track edges
         for (Map.Entry<String, List<CsvRow>> entry : lineRowsMap.entrySet()) {
             String lineName = entry.getKey();
             List<CsvRow> rows = entry.getValue();
 
-            // Sort rows by station_order
             rows.sort((r1, r2) -> Integer.compare(r1.stationOrder, r2.stationOrder));
 
             MetroLine metroLine = graph.getOrCreateLine(lineName);
@@ -114,7 +97,6 @@ public class MetroDataLoader {
                 metroLine.addStation(current.stationName);
                 graph.addStation(current.stationName, lineName);
 
-                // Add connection to next station if exists
                 if (i < rows.size() - 1) {
                     CsvRow next = rows.get(i + 1);
                     int travelTime = current.travelTimeToNext > 0 ? current.travelTimeToNext : 2;

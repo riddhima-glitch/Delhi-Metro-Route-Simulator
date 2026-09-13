@@ -14,12 +14,17 @@ public class Main {
         String dataFilePath = SimulationConfig.DEFAULT_DATA_PATH;
 
         if (args.length > 0) {
+            if (args[0].equalsIgnoreCase("--help") || args[0].equalsIgnoreCase("-h")) {
+                System.out.println("Delhi Metro Route & Schedule Simulator");
+                System.out.println("Usage: java -cp out metro.Main [optional_custom_data_path.csv]");
+                return;
+            }
             dataFilePath = args[0];
         }
 
         File dataFile = new File(dataFilePath);
         if (!dataFile.exists()) {
-            // Check parent directory fallback if executed from src or bin
+            // Check parent directory fallback if executed from a subfolder
             File fallback = new File("../" + dataFilePath);
             if (fallback.exists()) {
                 dataFilePath = fallback.getPath();

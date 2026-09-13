@@ -10,15 +10,6 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 
-/**
- * MetroRouteFinder
- * 
- * Implements Dijkstra's Shortest Path Algorithm on the metro graph.
- * Calculates optimal routes considering:
- * - Direct station-to-station rail travel time
- * - Interchange line-transfer penalty (walking between platforms)
- * - Initial station waiting time based on peak/off-peak frequency
- */
 public class MetroRouteFinder {
 
     private final MetroGraph graph;
@@ -28,8 +19,8 @@ public class MetroRouteFinder {
     }
 
     /**
-     * Node used inside the Dijkstra PriorityQueue.
-     * Represents the state of arriving at a station on a specific metro line.
+     * Represents the search state in Dijkstra's priority queue:
+     * (current station, active line, cumulative cost).
      */
     private static class NodeState implements Comparable<NodeState> {
         final String station;
@@ -52,14 +43,6 @@ public class MetroRouteFinder {
         }
     }
 
-    /**
-     * Finds the fastest route between source and destination stations at the given departure time.
-     * 
-     * @param sourceStationName Source station (case-insensitive)
-     * @param destStationName   Destination station (case-insensitive)
-     * @param searchTime        User's query time
-     * @return RouteResult containing detailed itinerary and journey metrics
-     */
     public RouteResult findRoute(String sourceStationName, String destStationName, LocalTime searchTime) {
         MetroStation srcStation = graph.findStation(sourceStationName);
         MetroStation dstStation = graph.findStation(destStationName);
@@ -71,7 +54,6 @@ public class MetroRouteFinder {
         String sourceCanonical = srcStation.getName();
         String destCanonical = dstStation.getName();
 
-        // Handle case where source and destination are the same
         if (sourceCanonical.equalsIgnoreCase(destCanonical)) {
             List<RouteStep> singleStep = new ArrayList<>();
             String defaultLine = srcStation.getLines().isEmpty() ? "Metro" : srcStation.getLines().iterator().next();
@@ -83,10 +65,9 @@ public class MetroRouteFinder {
         }
 
         PriorityQueue<NodeState> pq = new PriorityQueue<>();
-        // Best known cost for state (stationName + "#" + lineName)
         Map<String, Integer> bestCosts = new HashMap<>();
 
-        // Start from source station with no initial line (null line)
+        // Start from source with no initial line
         pq.add(new NodeState(sourceCanonical, null, 0, null, null));
         bestCosts.put(stateKey(sourceCanonical, null), 0);
 
@@ -95,7 +76,6 @@ public class MetroRouteFinder {
         while (!pq.isEmpty()) {
             NodeState current = pq.poll();
 
-            // Reached destination station
             if (current.station.equalsIgnoreCase(destCanonical)) {
                 destinationNode = current;
                 break;
@@ -106,14 +86,13 @@ public class MetroRouteFinder {
                 continue;
             }
 
-            // Explore adjacent stations
             for (MetroEdge edge : graph.getNeighbors(current.station)) {
                 String nextStation = edge.getDestination();
                 String edgeLine = edge.getLineName();
 
                 int edgeCost = edge.getTravelTimeMinutes();
 
-                // Apply interchange transfer penalty if changing from an existing line to a different line
+                // Add interchange penalty when switching from one line to another
                 if (current.currentLine != null && !current.currentLine.equalsIgnoreCase(edgeLine)) {
                     edgeCost += SimulationConfig.INTERCHANGE_TIME;
                 }
@@ -129,11 +108,9 @@ public class MetroRouteFinder {
         }
 
         if (destinationNode == null) {
-            // No connected route found
             return RouteResult.emptyResult(sourceCanonical, destCanonical, searchTime);
         }
 
-        // Reconstruct path from destination backwards to source
         return buildRouteResult(destinationNode, sourceCanonical, destCanonical, searchTime);
     }
 
@@ -155,7 +132,6 @@ public class MetroRouteFinder {
             edges.add(pathNodes.get(i).edgeUsed);
         }
 
-        // Calculate metrics
         int totalTravelTime = 0;
         int interchangeCount = 0;
         List<String> interchanges = new ArrayList<>();
@@ -173,7 +149,6 @@ public class MetroRouteFinder {
                 linesUsed.add(activeLine);
                 seenLines.add(activeLine);
             } else if (!activeLine.equalsIgnoreCase(edge.getLineName())) {
-                // Line change happened at the source of this edge
                 interchangeCount++;
                 interchanges.add(edge.getSource());
                 activeLine = edge.getLineName();
@@ -191,7 +166,6 @@ public class MetroRouteFinder {
         LocalTime departureTime = ScheduleCalculator.calculateDepartureTime(searchTime, waitingTime);
         LocalTime arrivalTime = ScheduleCalculator.calculateArrivalTime(departureTime, totalTravelTime + interchangeTime);
 
-        // Build list of RouteStep objects for itinerary display
         List<RouteStep> steps = new ArrayList<>();
         int stepNumber = 1;
 
@@ -200,15 +174,12 @@ public class MetroRouteFinder {
             String station = node.station;
 
             if (i == 0) {
-                // Source station
-                String firstLine = (edges.isEmpty()) ? "" : edges.get(0).getLineName();
+                String firstLine = edges.isEmpty() ? "" : edges.get(0).getLineName();
                 steps.add(new RouteStep(stepNumber++, station, firstLine, false, null, null));
             } else if (i == pathNodes.size() - 1) {
-                // Destination station
                 String lastLine = edges.get(edges.size() - 1).getLineName();
                 steps.add(new RouteStep(stepNumber++, station, lastLine, false, null, null));
             } else {
-                // Intermediate station
                 MetroEdge prevEdge = edges.get(i - 1);
                 MetroEdge nextEdge = edges.get(i);
 

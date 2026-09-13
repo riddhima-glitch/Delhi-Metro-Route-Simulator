@@ -7,21 +7,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-/**
- * MetroGraph
- * 
- * Graph representation of the Delhi Metro network.
- * Nodes represent Metro stations, and edges represent rail connections between them.
- */
 public class MetroGraph {
 
-    // Adjacency list: stationName -> list of outgoing edges
+    // Adjacency list: stationName -> outgoing track edges
     private final Map<String, List<MetroEdge>> adjacencyList;
 
-    // Station registry keyed by lowercase name for fast, case-insensitive lookups
+    // Station lookup by lowercase name for case-insensitive matching
     private final Map<String, MetroStation> stationRegistry;
 
-    // Line registry keyed by lowercase name
+    // Line lookup preserving case-insensitive alphabetical ordering
     private final Map<String, MetroLine> lineRegistry;
 
     public MetroGraph() {
@@ -30,9 +24,6 @@ public class MetroGraph {
         this.lineRegistry = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     }
 
-    /**
-     * Registers a station in the graph if it doesn't already exist.
-     */
     public MetroStation addStation(String stationName, String lineName) {
         String key = stationName.trim().toLowerCase();
         MetroStation station = stationRegistry.get(key);
@@ -47,9 +38,6 @@ public class MetroGraph {
         return station;
     }
 
-    /**
-     * Registers a metro line.
-     */
     public MetroLine getOrCreateLine(String lineName) {
         String key = lineName.trim();
         MetroLine line = lineRegistry.get(key);
@@ -60,9 +48,6 @@ public class MetroGraph {
         return line;
     }
 
-    /**
-     * Adds a directed edge between two stations.
-     */
     public void addEdge(String fromStation, String toStation, String lineName, int travelTime) {
         MetroStation from = addStation(fromStation, lineName);
         MetroStation to = addStation(toStation, lineName);
@@ -71,28 +56,16 @@ public class MetroGraph {
         adjacencyList.get(from.getName()).add(edge);
     }
 
-    /**
-     * Adds a bidirectional edge between two consecutive stations on a line.
-     */
     public void addBidirectionalConnection(String station1, String station2, String lineName, int travelTime) {
         addEdge(station1, station2, lineName, travelTime);
         addEdge(station2, station1, lineName, travelTime);
     }
 
-    /**
-     * Retrieves neighbors (outgoing edges) of a station.
-     */
     public List<MetroEdge> getNeighbors(String stationName) {
         List<MetroEdge> edges = adjacencyList.get(stationName);
-        if (edges == null) {
-            return Collections.emptyList();
-        }
-        return edges;
+        return edges != null ? edges : Collections.emptyList();
     }
 
-    /**
-     * Finds a station by name (case-insensitive). Returns null if not found.
-     */
     public MetroStation findStation(String stationName) {
         if (stationName == null) {
             return null;
@@ -101,10 +74,29 @@ public class MetroGraph {
     }
 
     /**
-     * Returns true if a station exists.
+     * Searches for stations matching a user query:
+     * - Returns an exact match if one exists
+     * - Otherwise returns all stations containing the query substring
      */
-    public boolean containsStation(String stationName) {
-        return findStation(stationName) != null;
+    public List<MetroStation> searchStations(String query) {
+        List<MetroStation> results = new ArrayList<>();
+        if (query == null || query.trim().isEmpty()) {
+            return results;
+        }
+
+        String sanitized = query.trim().toLowerCase();
+        MetroStation exact = findStation(sanitized);
+        if (exact != null) {
+            results.add(exact);
+            return results;
+        }
+
+        for (MetroStation station : stationRegistry.values()) {
+            if (station.getName().toLowerCase().contains(sanitized)) {
+                results.add(station);
+            }
+        }
+        return results;
     }
 
     public Map<String, MetroStation> getAllStations() {

@@ -4,12 +4,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * MetroStation
- * 
- * Represents a metro station in the network.
- * A single station can be served by multiple metro lines (making it an interchange).
- */
 public class MetroStation {
     private final String name;
     private final Set<String> lines;
@@ -33,9 +27,6 @@ public class MetroStation {
         return Collections.unmodifiableSet(lines);
     }
 
-    /**
-     * If a station connects 2 or more lines, it is an interchange station.
-     */
     public boolean isInterchange() {
         return lines.size() > 1;
     }

@@ -1,19 +1,11 @@
 package metro;
 
-import java.io.IOException;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-/**
- * MetroApplication
- * 
- * Interactive Command Line Interface for the Delhi Metro Route & Schedule Simulator.
- * Provides a menu-driven interface to explore lines, inspect stations, and compute
- * shortest/fastest travel routes with schedule predictions.
- */
 public class MetroApplication {
 
     private final MetroGraph graph;
@@ -26,9 +18,6 @@ public class MetroApplication {
         this.scanner = new Scanner(System.in);
     }
 
-    /**
-     * Main application loop.
-     */
     public void start() {
         boolean running = true;
         System.out.println("==================================================");
@@ -40,7 +29,7 @@ public class MetroApplication {
             printMainMenu();
             System.out.print("Enter your choice (1-6): ");
             String input = scanner.nextLine();
-            int choice = InputValidator.parseMenuChoice(input, 1, 6);
+            int choice = parseMenuChoice(input, 1, 6);
 
             switch (choice) {
                 case 1:
@@ -81,9 +70,6 @@ public class MetroApplication {
         System.out.println("--------------------------------------------------");
     }
 
-    /**
-     * Handles the route search flow.
-     */
     private void handleFindRoute() {
         System.out.println("\n==================================================");
         System.out.println("               FIND METRO ROUTE                   ");
@@ -101,13 +87,9 @@ public class MetroApplication {
         System.out.println("\nCalculating optimal route via Dijkstra's algorithm...\n");
 
         RouteResult result = routeFinder.findRoute(source.getName(), destination.getName(), searchTime);
-
         displayRouteResult(result);
     }
 
-    /**
-     * Displays the calculated route in a clear itinerary format.
-     */
     public void displayRouteResult(RouteResult result) {
         if (!result.isRouteFound()) {
             System.out.println("--------------------------------------------------");
@@ -174,9 +156,6 @@ public class MetroApplication {
         System.out.println("--------------------------------------------------\n");
     }
 
-    /**
-     * Prompts for a station name with case-insensitive and partial-match support.
-     */
     private MetroStation promptForStation(String prompt) {
         while (true) {
             System.out.print(prompt);
@@ -192,7 +171,7 @@ public class MetroApplication {
                 continue;
             }
 
-            List<MetroStation> matches = InputValidator.searchStations(graph, input);
+            List<MetroStation> matches = graph.searchStations(input);
 
             if (matches.isEmpty()) {
                 System.out.println("[!] Station '" + input + "' not found in the Delhi Metro network.");
@@ -200,7 +179,7 @@ public class MetroApplication {
                 continue;
             }
 
-            // Exact match
+            // Exact match found
             if (matches.size() == 1 && matches.get(0).getName().equalsIgnoreCase(input)) {
                 return matches.get(0);
             }
@@ -220,7 +199,7 @@ public class MetroApplication {
             }
             System.out.print("Please select station number (1-" + matches.size() + ") or 0 to re-enter: ");
             String selStr = scanner.nextLine();
-            int sel = InputValidator.parseMenuChoice(selStr, 0, matches.size());
+            int sel = parseMenuChoice(selStr, 0, matches.size());
             if (sel > 0) {
                 return matches.get(sel - 1);
             }
@@ -228,9 +207,6 @@ public class MetroApplication {
         }
     }
 
-    /**
-     * Prompts for time in HH:mm format.
-     */
     private LocalTime promptForTime() {
         while (true) {
             System.out.print("Enter current time (HH:MM in 24-hr format, or press Enter for current system time): ");
@@ -247,7 +223,7 @@ public class MetroApplication {
                 return null;
             }
 
-            LocalTime parsed = InputValidator.validateTime(input);
+            LocalTime parsed = ScheduleCalculator.parseTime(input);
             if (parsed != null) {
                 return parsed;
             }
@@ -256,9 +232,6 @@ public class MetroApplication {
         }
     }
 
-    /**
-     * Lists all metro lines in the system.
-     */
     private void handleViewLines() {
         System.out.println("\n==================================================");
         System.out.println("              DELHI METRO LINES                   ");
@@ -275,9 +248,6 @@ public class MetroApplication {
         System.out.println("--------------------------------------------------\n");
     }
 
-    /**
-     * Displays all stations for a selected line in order.
-     */
     private void handleViewStationsOnLine() {
         System.out.println("\n==================================================");
         System.out.println("            VIEW STATIONS ON A LINE               ");
@@ -289,7 +259,7 @@ public class MetroApplication {
         }
         System.out.print("\nSelect line number (1-" + linesList.size() + ") or 0 to go back: ");
         String selStr = scanner.nextLine();
-        int sel = InputValidator.parseMenuChoice(selStr, 0, linesList.size());
+        int sel = parseMenuChoice(selStr, 0, linesList.size());
 
         if (sel <= 0) {
             System.out.println();
@@ -316,9 +286,6 @@ public class MetroApplication {
         System.out.println("--------------------------------------------------\n");
     }
 
-    /**
-     * Searches for stations matching a keyword.
-     */
     private void handleSearchStation() {
         System.out.println("\n==================================================");
         System.out.println("               SEARCH STATION                     ");
@@ -331,7 +298,7 @@ public class MetroApplication {
             return;
         }
 
-        List<MetroStation> matches = InputValidator.searchStations(graph, query);
+        List<MetroStation> matches = graph.searchStations(query);
         if (matches.isEmpty()) {
             System.out.println("[!] No stations found matching '" + query + "'.\n");
             return;
@@ -348,9 +315,6 @@ public class MetroApplication {
         System.out.println("--------------------------------------------------\n");
     }
 
-    /**
-     * Shows project info, algorithm explanations, and simulation assumptions.
-     */
     private void handleProjectInfo() {
         System.out.println("\n==================================================");
         System.out.println("           ABOUT DELHI METRO SIMULATOR            ");
@@ -375,5 +339,19 @@ public class MetroApplication {
         System.out.println("   - Transfer Time: " + SimulationConfig.INTERCHANGE_TIME + " minutes per line change (walking penalty).");
         System.out.println("   - Data Source:   External CSV (data/metro_data.csv).");
         System.out.println("--------------------------------------------------\n");
+    }
+
+    private int parseMenuChoice(String input, int min, int max) {
+        if (input == null || input.trim().isEmpty()) {
+            return -1;
+        }
+        try {
+            int choice = Integer.parseInt(input.trim());
+            if (choice >= min && choice <= max) {
+                return choice;
+            }
+        } catch (NumberFormatException ignored) {
+        }
+        return -1;
     }
 }

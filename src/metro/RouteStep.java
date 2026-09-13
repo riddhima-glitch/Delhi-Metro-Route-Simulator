@@ -1,10 +1,5 @@
 package metro;
 
-/**
- * RouteStep
- * 
- * Represents a single station step in the generated route itinerary.
- */
 public class RouteStep {
     private final int stepNumber;
     private final String stationName;

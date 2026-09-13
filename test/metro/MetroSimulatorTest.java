@@ -5,23 +5,7 @@ import metro.*;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalTime;
-import java.util.List;
 
-/**
- * MetroSimulatorTest
- * 
- * Standalone test suite covering all essential test scenarios:
- * 1. Same-line route calculation
- * 2. Single-interchange route calculation
- * 3. Multi-interchange route calculation
- * 4. Source equals destination handling
- * 5. Invalid station query handling
- * 6. Time parsing and invalid time formatting
- * 7. Peak-hour frequency and waiting time
- * 8. Off-peak frequency and waiting time
- * 9. Case-insensitive station search
- * 10. Missing dataset error handling
- */
 public class MetroSimulatorTest {
 
     private static int testsRun = 0;
@@ -78,7 +62,7 @@ public class MetroSimulatorTest {
         // Test 10: Missing data file handling
         testMissingDataFile();
 
-        // Final Summary
+        // Summary
         System.out.println("\n==================================================");
         System.out.printf("TEST SUMMARY: %d/%d tests passed (%.1f%%)\n",
                 testsPassed, testsRun, (testsPassed * 100.0 / testsRun));
@@ -127,8 +111,7 @@ public class MetroSimulatorTest {
     }
 
     private static void testMultipleInterchangeRoute(MetroRouteFinder finder) {
-        // IIT Delhi (Magenta) to Vaishali (Blue Branch)
-        // Expected route: IIT Delhi (Magenta) -> Botanical Garden (Blue) -> Yamuna Bank (Blue Branch) -> Vaishali
+        // IIT Delhi (Magenta) to Vaishali (Blue Line Branch)
         RouteResult result = finder.findRoute("IIT Delhi", "Vaishali", LocalTime.of(9, 30));
 
         boolean passed = result.isRouteFound() &&
@@ -160,9 +143,9 @@ public class MetroSimulatorTest {
     }
 
     private static void testTimeValidation() {
-        LocalTime validTime = InputValidator.validateTime("09:30");
-        LocalTime invalidTime1 = InputValidator.validateTime("25:00");
-        LocalTime invalidTime2 = InputValidator.validateTime("abc");
+        LocalTime validTime = ScheduleCalculator.parseTime("09:30");
+        LocalTime invalidTime1 = ScheduleCalculator.parseTime("25:00");
+        LocalTime invalidTime2 = ScheduleCalculator.parseTime("abc");
 
         boolean passed = (validTime != null && validTime.getHour() == 9 && validTime.getMinute() == 30) &&
                 (invalidTime1 == null) &&

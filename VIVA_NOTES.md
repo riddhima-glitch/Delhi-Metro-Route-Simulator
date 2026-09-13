@@ -104,7 +104,7 @@ $$\text{Minute Remainder} = \text{currentMinute} \pmod{\text{frequency}}$$
 ### Q12. How does the program handle invalid station inputs and case variations?
 **Answer:**
 1. **Case-Insensitive Indexing**: Stations are registered in `MetroGraph` using lowercase keys in a `HashMap`.
-2. **Partial Search / Suggestions**: In `InputValidator.java`, if an exact match is not found, a substring search is executed across all station names, presenting matching candidates to the user.
+2. **Partial Search / Suggestions**: In `MetroGraph.java` (`searchStations`), if an exact match is not found, a substring search is executed across all station names, presenting matching candidates to the user.
 3. **Graceful Error Messages**: If no match exists, the user is notified with friendly suggestions instead of crashing.
 
 ---

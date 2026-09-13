@@ -4,12 +4,6 @@ import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * RouteResult
- * 
- * Data transfer object encapsulating the complete calculated route solution,
- * journey durations, line switches, and departure/arrival timings.
- */
 public class RouteResult {
     private final String sourceStation;
     private final String destinationStation;

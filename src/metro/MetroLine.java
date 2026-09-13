@@ -4,11 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * MetroLine
- * 
- * Represents a complete metro line with its ordered list of stations.
- */
 public class MetroLine {
     private final String name;
     private final List<String> stations;
