@@ -83,8 +83,7 @@ DelhiMetroSimulator/
 │   └── metro/
 │       └── MetroSimulatorTest.java # Standalone verification test suite
 │
-├── README.md                       # Project documentation
-└── VIVA_NOTES.md                   # Viva exam preparation notes
+└── README.md                       # Project documentation
 ```
 
 ---
