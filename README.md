@@ -1,132 +1,90 @@
 # Delhi Metro Route & Schedule Simulator
 
-A pure terminal-based Java application that models the Delhi Metro network as a weighted graph, calculates optimal travel routes using Dijkstra's Algorithm, and simulates departure schedules, platform waiting times, and interchange transfer penalties.
+A terminal-based Java application that models the Delhi Metro network as a weighted graph, finds shortest routes using Dijkstra's algorithm, and estimates travel times based on line interchanges, walking transfer penalties, and peak/off-peak train frequencies.
+
+I built this project for my 2nd-year Java / Data Structures coursework to practice working with graphs, priority queues, and file I/O.
 
 ---
 
-## 1. Project Overview
+## Features
 
-The **Delhi Metro Route & Schedule Simulator** is a 2nd-year college computer science project built using Core Java. It demonstrates practical applications of Object-Oriented Programming (OOP), Data Structures (Graphs, PriorityQueues), and Graph Algorithms (Dijkstra's Shortest Path) on a real-world public transit problem.
-
-The application runs directly from the terminal or command prompt using standard `javac` and `java` commands. It does not require any build tools (Maven/Gradle), database servers, or external framework dependencies.
-
-The metro network data is loaded dynamically from `data/metro_data.csv`.
-
----
-
-## 2. Problem Statement
-
-Navigating a massive urban transit system like the Delhi Metro (with over 240 stations across 12 lines) presents multiple challenges for commuters:
-1. Finding the optimal route among multiple possible line combinations and transfer points.
-2. Estimating total journey time including in-train travel, platform transfer walking times, and train departure waiting times.
-3. Accounting for train frequency differences during peak rush hours versus off-peak hours.
-
-This project solves this by modeling the network as an interconnected graph and providing an interactive, text-based terminal interface.
+- **Dynamic Route Finding**: Finds the fastest path between any two stations using Dijkstra's algorithm.
+- **Interchange Detection**: Shows where line changes happen and adds a 5-minute walking transfer penalty per interchange.
+- **Frequency & Waiting Time Simulation**:
+  - Peak hours (08:00–10:00 and 17:00–19:00): 4-minute train frequency.
+  - Off-peak hours: 8-minute train frequency.
+  - Calculates estimated departure and arrival times based on the entered query time.
+- **Station Search & Line Explorer**:
+  - Case-insensitive search with partial name suggestions (e.g., typing `rajiv` or `botanical`).
+  - View all 12 metro lines and list stations on any selected line.
+- **CSV Data Loading**: Station connections, lines, and travel times are loaded from `data/metro_data.csv` rather than being hardcoded in Java.
 
 ---
 
-## 3. Key Features
+## Tech Stack
 
-- **Dynamic Route Finder**: Computes the optimal path between any two stations in the Delhi Metro network.
-- **Interchange Detection**: Automatically highlights where passengers must switch trains, showing incoming and outgoing lines.
-- **Schedule & Waiting Time Simulation**:
-  - Peak hours (08:00–10:00 & 17:00–19:00): 4-minute train headway.
-  - Off-peak hours: 8-minute train headway.
-  - Dynamic departure and arrival time calculation.
-- **Interchange Walking Penalty**: Adds an estimated 5-minute platform transfer penalty per interchange.
-- **Case-Insensitive & Partial Matching**: Accepts inputs like `rajiv chowk`, `RAJIV CHOWK`, or `botanical` and matches automatically.
-- **Network Explorer**:
-  - View all 12 operational metro lines and terminal stations.
-  - View ordered station lists for any specific line with interchange markers.
-  - Search stations by keyword.
-- **Multi-Search Support**: Perform repeated searches without restarting the application.
-- **Configurable Architecture**: Simulation parameters (frequencies, penalties, peak hours) are centralized in `SimulationConfig.java`.
+- **Language**: Java (JDK 17+)
+- **Data Structures**: Adjacency List (`Map<String, List<MetroEdge>>`), Min-Heap (`PriorityQueue`), `HashMap`, `ArrayList`
+- **APIs**: `java.time.LocalTime`, `java.time.format.DateTimeFormatter`, `java.io.BufferedReader`, `java.util.Scanner`
+- **Build Tool**: None required (uses standard `javac` and `java` commands)
 
 ---
 
-## 4. Technologies & Concepts
+## Project Structure
 
-- **Language**: Java (JDK 17 or later)
-- **Data Structures**:
-  - Adjacency List Graph (`Map<String, List<MetroEdge>>`)
-  - Min-Heap Priority Queue (`PriorityQueue<NodeState>`)
-  - Hash Sets and Tree Maps (`HashSet`, `TreeMap`)
-- **Algorithms**: Dijkstra's Shortest Path Algorithm ($\mathcal{O}((V + E) \log V)$)
-- **Java APIs**: `java.time.LocalTime`, `java.time.format.DateTimeFormatter`, `java.io.BufferedReader`, `java.util.Scanner`
-
----
-
-## 5. Project Structure
-
-```
+```text
 DelhiMetroSimulator/
-│
 ├── data/
 │   └── metro_data.csv             # Delhi Metro lines, stations, and connection timings
-│
 ├── src/
 │   └── metro/
-│       ├── Main.java              # Application entry point
-│       ├── MetroApplication.java   # Terminal CLI menu loop and presentation layer
-│       ├── MetroStation.java       # Station entity (name, lines served, interchange flag)
-│       ├── MetroLine.java          # Line entity (name, ordered station sequence)
-│       ├── MetroEdge.java          # Directional track edge (source, dest, line, travel time)
-│       ├── MetroGraph.java         # Adjacency list graph with station & line registries
-│       ├── MetroDataLoader.java    # CSV loader and graph builder with validation
-│       ├── MetroRouteFinder.java   # Dijkstra algorithm implementation
-│       ├── RouteResult.java        # Route metrics DTO (times, durations, steps)
+│       ├── Main.java              # Entry point
+│       ├── MetroApplication.java   # Console menu loop and user prompts
+│       ├── MetroStation.java       # Station node (name, lines served)
+│       ├── MetroLine.java          # Line data (name, station list)
+│       ├── MetroEdge.java          # Directed graph edge with travel duration
+│       ├── MetroGraph.java         # Adjacency list graph and search methods
+│       ├── MetroDataLoader.java    # CSV file parser
+│       ├── MetroRouteFinder.java   # Dijkstra shortest path implementation
+│       ├── RouteResult.java        # Route metrics and timing DTO
 │       ├── RouteStep.java          # Individual step in route itinerary
-│       ├── ScheduleCalculator.java # Headway, peak-hour, and arrival time math
-│       └── SimulationConfig.java   # Simulation constants and parameters
-│
+│       ├── ScheduleCalculator.java # Headway and arrival time math
+│       └── SimulationConfig.java   # Frequency, transfer penalty, and peak constants
 ├── test/
 │   └── metro/
-│       └── MetroSimulatorTest.java # Standalone verification test suite
-│
-└── README.md                       # Project documentation
+│       └── MetroSimulatorTest.java # Standalone verification tests
+└── README.md
 ```
 
 ---
 
-## 6. How to Compile and Run (Terminal Execution)
+## How to Compile and Run
 
-The project is designed to be compiled and executed directly from the terminal without any external build tools or wrapper scripts.
+The project runs completely from the terminal and does not require Maven or Gradle.
 
-### Step 1: Open Terminal & Navigate to Project Directory
+### 1. Compile
+
+Open a terminal in the project root directory and compile the source files into the `out` folder:
+
+**Windows (Command Prompt / PowerShell):**
 ```cmd
-cd path/to/DelhiMetroSimulator
+javac -d out src/metro/*.java test/metro/*.java
 ```
 
-### Step 2: Compile the Java Source Files
-Compile all source files into the `out` directory:
+**Linux / macOS:**
+```bash
+javac -d out src/metro/*.java test/metro/*.java
+```
 
-- **Windows Command Prompt (cmd)**:
-  ```cmd
-  javac -d out src\metro\*.java test\metro\*.java
-  ```
+### 2. Run the Simulator
 
-- **Windows PowerShell**:
-  ```powershell
-  javac -d out src/metro/*.java test/metro/*.java
-  ```
+```cmd
+java -cp out metro.Main
+```
 
-- **Linux / macOS Terminal**:
-  ```bash
-  javac -d out src/metro/*.java test/metro/*.java
-  ```
+### 3. Run the Tests (Optional)
 
-### Step 3: Run the Application
-Run the `Main` class from the project root:
-
-- **Windows / Linux / macOS**:
-  ```cmd
-  java -cp out metro.Main
-  ```
-
-*Note: The application will automatically locate `data/metro_data.csv` in the current working directory.*
-
-### Step 4: (Optional) Run the Test Suite
-To run the automated verification test suite:
+A test file is included to verify same-line routes, multi-interchange routes, invalid inputs, and timing logic:
 
 ```cmd
 java -cp out test.metro.MetroSimulatorTest
@@ -134,9 +92,8 @@ java -cp out test.metro.MetroSimulatorTest
 
 ---
 
-## 7. Sample Input and Output
+## Sample Output
 
-### Finding a Route (Single Interchange)
 ```text
 ==================================================
                FIND METRO ROUTE                   
@@ -192,66 +149,18 @@ Arrival Time:            09:57
 
 ---
 
-## 8. Dataset Format
+## Dataset & Assumptions
 
-The metro network is defined in `data/metro_data.csv`:
-
-```csv
-line_name,station_name,station_order,travel_time_to_next
-Red Line,Shaheed Sthal,1,2
-Red Line,Hindon River,2,2
-...
-Yellow Line,Samaypur Badli,1,2
-Yellow Line,Kashmere Gate,12,2
-...
-Blue Line,Rajiv Chowk,29,2
-...
-```
-
-- **`line_name`**: Name of the metro line (e.g. `Red Line`, `Yellow Line`, `Magenta Line`).
-- **`station_name`**: Name of the station. Interchange stations share the exact same name across lines.
-- **`station_order`**: Sequence index of the station on the line.
-- **`travel_time_to_next`**: Estimated transit time in minutes to the next sequential station (0 for terminal stations).
-
-### Lines Covered in Dataset:
-1. Red Line (Shaheed Sthal $\leftrightarrow$ Rithala)
-2. Yellow Line (Samaypur Badli $\leftrightarrow$ Millennium City Centre Gurugram)
-3. Blue Line Main (Dwarka Sector 21 $\leftrightarrow$ Noida Electronic City)
-4. Blue Line Branch (Yamuna Bank $\leftrightarrow$ Vaishali)
-5. Green Line (Brigadier Hoshiar Singh $\leftrightarrow$ Inderlok)
-6. Green Line Branch (Ashok Park Main $\leftrightarrow$ Kirti Nagar)
-7. Violet Line (Kashmere Gate $\leftrightarrow$ Raja Nahar Singh)
-8. Pink Line (Majlis Park $\leftrightarrow$ Shiv Vihar)
-9. Magenta Line (Janakpuri West $\leftrightarrow$ Botanical Garden)
-10. Grey Line (Dwarka $\leftrightarrow$ Dhansa Bus Stand)
-11. Airport Express Line (New Delhi $\leftrightarrow$ Yashobhoomi Dwarka Sector 25)
-12. Rapid Metro Gurugram (Sector 55-56 $\leftrightarrow$ Phase 3)
+- **Station and Line Data**: Includes Red, Yellow, Blue, Blue Branch, Green, Green Branch, Violet, Pink, Magenta, Grey, Airport Express, and Rapid Metro lines with approx 240 stations.
+- **Travel Times**: Estimated at 2–3 minutes between consecutive stations.
+- **Interchange Penalty**: Assumes an average 5-minute platform walking transfer time when changing lines.
+- **Frequencies**: Fixed simulation headways (4 min peak, 8 min off-peak) rather than live DMRC tracking feeds.
 
 ---
 
-## 9. Simulation Assumptions vs Real DMRC Data
+## Limitations & Possible Improvements
 
-To maintain academic clarity:
-
-| Aspect | Status | Details |
-| :--- | :--- | :--- |
-| **Stations & Lines** | Realistic | Names and topological order match operational Delhi Metro lines. |
-| **Interchange Connections** | Realistic | Connecting stations match real-world interchange junctions. |
-| **Travel Times** | Approximation | Average 2–3 minutes between adjacent stations. |
-| **Train Headways** | Simulated | 4 mins for peak hours, 8 mins for off-peak hours. |
-| **Interchange Walk Time** | Simulated | Fixed at 5 minutes per platform transfer. |
-| **Live Train Tracking** | Simulated | Periodic headway model based on the user's entered time. |
-
----
-
-## 10. Limitations & Future Improvements
-
-### Current Limitations
-- Does not connect to live DMRC real-time GPS feeds or dynamic delay APIs.
-- Interchange walking times are modeled as a uniform 5 minutes (some physical stations have longer walkways than others).
-- Fares are not calculated in the current version.
-
-### Potential Future Improvements
-- Fare calculation based on distance/station slabs.
-- Station platform gate / exit directions (Gate 1, Gate 2).
-- First/last train cutoff alerts late at night.
+- Interchange walking times are modeled as a uniform 5 minutes (some physical stations take longer to walk through than others).
+- Does not integrate with live DMRC GPS tracking APIs.
+- Fares are currently not calculated.
+- Possible future additions: fare calculation based on station distance, platform exit gate information, and first/last train cutoff warnings.
